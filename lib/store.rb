@@ -4,6 +4,8 @@ class Store < ActiveRecord::Base
   validates :annual_revenue, numericality: { only_integer: true, greater_than_or_equal_to: 0}
   validate :apparel_present
 
+  before_destroy :make_sure_store_empty
+
   def apparel_present
     if !mens_apparel.present? && !womens_apparel.present?
       errors.add(:mens_apparel, 'or womens apparel (at least one) must be true')
@@ -11,6 +13,13 @@ class Store < ActiveRecord::Base
     end
   end
 
+  private
+  def make_sure_store_empty
+    unless employees.empty?
+      errors[:base] << "Cannot destroy store when non-empty"
+      throw :abort
+    end
+  end
 
 
 end
